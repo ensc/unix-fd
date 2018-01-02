@@ -10,7 +10,6 @@ categories = ["filesystem", "os::unix-apis"]
 keywords = ["fd", "chroot", "openat"]
 
 repository = "https://github.com/ensc/unix-fd.git"
-documentation = "README.org"
 
 [dependencies]
 errno = "0.2"
