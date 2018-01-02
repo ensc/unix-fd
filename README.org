@@ -1,0 +1,28 @@
+* Unix filedescriptor related utilties
+
+** ~mod fd~
+
+Provides basic functions around unix filedescriptors.  Especially, it
+implements wrappers around ~openat()~ and related ~*at()~ syscalls.
+
+** ~mod dir~
+
+Implements ~fdopendir()~ and directory traversal functions for Unix
+filedescriptors.
+
+** ~mod chroot~
+
+Implements functions to access a directory in a chroot like way
+without requiring superuser permissions.  E.g. it will resolve
+symlinks relative to the chroot top directory.  Every traversal and
+lookup operation will be done in a secure (non-racy) way by using
+~openat()~ and related functions.
+
+
+* License
+
+The crate is licensed under the terms of GNU Lesser General Public
+License version 3.0 (LGPL-3.0).
+
+
+

@@ -1,0 +1,23 @@
+[package]
+name = "unix-fd"
+version = "0.0.0"
+authors = ["Enrico Scholz <enrico.scholz@sigma-chemnitz.de>"]
+
+license = "LGPL-3.0"
+description = "Unix filedescriptor related utilities"
+
+categories = ["filesystem", "os::unix-apis"]
+keywords = ["fd", "chroot", "openat"]
+
+repository = "https://github.com/ensc/unix-fd.git"
+documentation = "README.org"
+
+[dependencies]
+errno = "0.2"
+libc = "0.2"
+log = "0.4"
+error-chain = "0.11"
+
+[dev-dependencies]
+tempdir = "*"
+env_logger = "*"

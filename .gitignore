@@ -1,0 +1,6 @@
+**/*.rs.bk
+/README.pdf
+/README.tex
+/auto
+Cargo.lock
+target/
