@@ -63,15 +63,15 @@ impl<'a> std::ops::Deref for FdRcProxy<'a> {
 }
 
 impl Fd {
-    fn _new(fd: int) -> Fd {
-        Fd {
+    fn _new(fd: int) -> Self {
+        Self {
             fd: fd,
             is_managed: Cell::new(fd >= 0 && fd != libc::AT_FDCWD),
         }
     }
 
-    fn _new_unmanaged(fd: int) -> Fd {
-        Fd {
+    fn _new_unmanaged(fd: int) -> Self {
+        Self {
             fd: fd,
             is_managed: Cell::new(false),
         }
@@ -86,7 +86,7 @@ impl Fd {
         Ok(res)
     }
 
-    pub fn open<T: AsRef<Path>>(path: &T, flags: int) -> Result<Fd> {
+    pub fn open<T: AsRef<Path>>(path: &T, flags: int) -> Result<Self> {
         let fd = try_errno!(unsafe {
             libc::open(path.as_ref().as_libc().0, flags)
         });
@@ -94,7 +94,7 @@ impl Fd {
         Ok(Self::_new(fd))
     }
 
-    pub fn openat<T: AsRef<Path>>(&self, path: &T, flags: int) -> Result<Fd> {
+    pub fn openat<T: AsRef<Path>>(&self, path: &T, flags: int) -> Result<Self> {
         let fd = try_errno!(unsafe {
             libc::openat(self.fd, path.as_ref().as_libc().0, flags)
         });
@@ -102,7 +102,9 @@ impl Fd {
         Ok(Self::_new(fd))
     }
 
-    pub fn createat<T: AsRef<Path>>(&self, path: &T, flags: int, mode: u32) -> Result<Fd> {
+    pub fn createat<T: AsRef<Path>>(&self, path: &T, flags: int,
+                                    mode: u32) -> Result<Self>
+    {
         let fd = try_errno!(unsafe {
             libc::openat(self.fd, path.as_ref().as_libc().0,
                          flags | libc::O_CREAT, mode)
@@ -133,17 +135,17 @@ impl Fd {
         Ok(())
     }
 
-    pub unsafe fn new(fd: int) -> Fd {
+    pub unsafe fn new(fd: int) -> Self {
         assert!(fd >= 0);
 
         Self::_new(fd)
     }
 
-    pub fn cwd() -> Fd {
+    pub fn cwd() -> Self {
         Self::_new(libc::AT_FDCWD)
     }
 
-    pub unsafe fn as_unmanaged(&self) -> Fd {
+    pub unsafe fn as_unmanaged(&self) -> Self {
         Self::_new_unmanaged(self.fd)
     }
 
@@ -173,7 +175,7 @@ impl Fd {
         }
     }
 
-    pub fn dupfd(&self, cloexec: bool) -> Result<Fd> {
+    pub fn dupfd(&self, cloexec: bool) -> Result<Self> {
         let cmd: int = match cloexec {
             true	=> libc::F_DUPFD_CLOEXEC,
             false	=> libc::F_DUPFD,
