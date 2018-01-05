@@ -253,4 +253,15 @@ fn test0() {
         &root.chroot.root_fd().expect("failed to get chroot fd"),
         &TEST_FS_INSIDE,
     );
+
+    use std::path::Path;
+    let mut fd = root.chroot.open(&Path::new("/tmp"), 0
+                                  | libc::O_DIRECTORY | libc::O_RDONLY
+                                  | libc::O_CLOEXEC).unwrap();
+
+    fd = root.chroot.chdirat(&fd, &Path::new(".")).unwrap();
+    assert!(fd.fstat().is_ok());
+
+    fd = root.chroot.chdirat(&fd, &Path::new("./d0")).unwrap();
+    assert!(fd.fstat().is_ok());
 }

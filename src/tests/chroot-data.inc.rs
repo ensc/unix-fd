@@ -68,6 +68,8 @@ pub static TEST_FS_INSIDE: FsItem =
             FileLink(b"lf4", b"/tmp/passwd",   "inner-tmp_passwd"),
             FileLink(b"lf5", b"../etc/passwd", "inner-etc_passwd"),
 
+            FileLink(b"lf6", b"./d0/d1/f0",    "inner-tmp_d0_d1_f0"),
+
             DeadLink(b"lD0", b"non-existing"),
             DeadLink(b"lD1", b"/etc/group"),
             DeadLink(b"lD2", b"lD2"),
