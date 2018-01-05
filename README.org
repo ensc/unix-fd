@@ -1,5 +1,7 @@
 * Unix filedescriptor related utilties
 
+Documentation at https://docs.rs/unix-fd/
+
 ** ~mod fd~
 
 Provides basic functions around unix filedescriptors.  Especially, it
