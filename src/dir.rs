@@ -40,7 +40,7 @@ impl Dir {
 
         // do not use dupfd() here; fds share file offsets which is
         // usually not wanted
-        let fd = fd.openat(&OsString::from("."), FLAGS)?;
+        let fd = fd.to_fdraw().openat(&OsString::from("."), FLAGS)?;
 
         let dir = {
             let dir = unsafe { fdopendir(fd.fd) };

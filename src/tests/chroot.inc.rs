@@ -157,7 +157,9 @@ fn check_fsitem(root: &ChrootedChroot, dir_fd: &::fd::Fd, item: &FsItem) {
             let fd = fd_ref.unwrap();
             let mut data = String::new();
 
-            fd.into_file()
+            fd.into_rawfd()
+                .expect("failed to unref fd")
+                .into_file()
                 .expect("failed to convert fd")
                 .read_to_string(&mut data)
                 .expect(&format!("failed to read file {:?}", full_path));
@@ -185,7 +187,7 @@ fn check_fsitem(root: &ChrootedChroot, dir_fd: &::fd::Fd, item: &FsItem) {
             ));
 
             let st_b =
-                ::fd::Fd::stat(&root.dir.join(exp), false).expect(&format!(
+                ::fd::FdRaw::stat(&root.dir.join(exp), false).expect(&format!(
                     "failed to stat reference dir {:?}",
                     exp
                 ));

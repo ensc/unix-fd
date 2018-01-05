@@ -29,12 +29,12 @@ type int = libc::c_int;
 
 // wrap a file descriptor and close it automatically
 #[derive(Debug)]
-pub struct Fd {
+pub struct FdRaw {
     pub(crate) fd: libc::c_int,
     pub(crate) is_managed: Cell<bool>,
 }
 
-impl Drop for Fd {
+impl Drop for FdRaw {
     fn drop(&mut self) {
         if self.is_managed.get() {
             let rc = unsafe { libc::close(self.fd) };
@@ -47,22 +47,7 @@ impl Drop for Fd {
     }
 }
 
-pub type FdRc = std::rc::Rc<Fd>;
-
-pub struct FdRcProxy<'a> {
-    fdrc: FdRc,
-    _d: std::marker::PhantomData<&'a u32>,
-}
-
-impl<'a> std::ops::Deref for FdRcProxy<'a> {
-    type Target = FdRc;
-
-    fn deref(&self) -> &Self::Target {
-        &self.fdrc
-    }
-}
-
-impl Fd {
+impl FdRaw {
     fn _new(fd: int) -> Self {
         Self {
             fd: fd,
@@ -147,32 +132,6 @@ impl Fd {
 
     pub unsafe fn as_unmanaged(&self) -> Self {
         Self::_new_unmanaged(self.fd)
-    }
-
-    pub(crate) fn from_fdrc(fdrc: FdRc) -> Result<Fd> {
-        use std::rc::Rc;
-
-        match Rc::try_unwrap(fdrc) {
-            Err(ref e) => bail!("bad refcount ({}/{})",
-                            Rc::strong_count(e),
-                            Rc::weak_count(e)),
-            Ok(ref fd) => {
-                fd.is_managed.set(false);
-                Ok(Self::_new(fd.fd))
-            }
-        }
-    }
-
-    pub fn into_fdrc(self) -> FdRc {
-        self.is_managed.set(false);
-        FdRc::new(Self::_new(self.fd))
-    }
-
-    pub fn as_fdrc(&self) -> FdRcProxy {
-        FdRcProxy{
-            fdrc: std::rc::Rc::new(Self::_new_unmanaged(self.fd)),
-            _d: std::marker::PhantomData,
-        }
     }
 
     pub fn dupfd(&self, cloexec: bool) -> Result<Self> {
@@ -283,6 +242,62 @@ impl Fd {
             // try again...
             buf.reserve(256);
         }
+    }
+}
+
+#[cfg(not(feature = "atomic-rc"))]
+type Rc<T> = std::rc::Rc<T>;
+
+#[cfg(feature = "atomic-rc")]
+type Rc<T> = std::sync::Arc<T>;
+
+#[derive(Clone, Debug)]
+pub struct Fd(Rc<FdRaw>);
+
+impl Fd {
+    fn to_self(fd: FdRaw) -> Self {
+        Fd(Rc::new(fd))
+    }
+
+    pub fn to_fdraw(&self) -> &FdRaw {
+        &self.0
+    }
+
+    pub fn open<T: AsRef<Path>>(path: &T, flags: int) -> Result<Self> {
+        FdRaw::open(path, flags).map(Self::to_self)
+    }
+
+    pub fn openat<T: AsRef<Path>>(&self, path: &T, flags: int) -> Result<Self> {
+        self.0.openat(path, flags).map(Self::to_self)
+    }
+
+    pub fn createat<T: AsRef<Path>>(&self, path: &T, flags:
+                                    int, mode: u32) -> Result<Self> {
+        self.0.createat(path, flags, mode).map(Self::to_self)
+    }
+
+    pub fn cwd() -> Self {
+        Self::to_self(FdRaw::cwd())
+    }
+
+    pub fn into_rawfd(self) -> std::result::Result<FdRaw, Fd> {
+        match Rc::try_unwrap(self.0) {
+            Err(fd) => Err(Fd(fd)),
+            Ok(fd) => Ok(fd),
+        }
+    }
+
+    pub unsafe fn into_file(self) -> Result<std::fs::File>
+    {
+        self.into_rawfd().unwrap().into_file()
+    }
+}
+
+impl std::ops::Deref for Fd {
+    type Target = FdRaw;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

@@ -93,7 +93,10 @@ mod test {
                                     | libc::O_EXCL, 0o0666)
                     .expect(&format!("failed to create file {:?}", path));
 
-                fs_fd.into_file()
+                fs_fd
+                    .into_rawfd()
+                    .expect(&format!("failed to unref fd"))
+                    .into_file()
                     .expect(&format!("failed to transform file {:?}", path))
                     .write_all(content.as_bytes())
                     .expect(&format!("failed to fill file {:?}", path));

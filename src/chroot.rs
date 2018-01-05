@@ -7,7 +7,6 @@ use std;
 use std::fmt;
 use std::path::{Path, PathBuf};
 use std::ffi::OsString;
-use std::rc::Rc;
 
 use fd::*;
 use dir::*;
@@ -136,9 +135,7 @@ impl Chroot {
 
         let mut env: ChdirLoopEnv = ChdirLoopEnv::new();
 
-        self.chdir_internal(Rc::new(Fd::cwd()), path, &mut env)
-            .map(|fd| Ok(Fd::from_fdrc(fd)?))
-            .unwrap()
+        self.chdir_internal(Fd::cwd(), path, &mut env)
     }
 
     /// Opens a directory `path` in the chroot environment relative
@@ -151,16 +148,13 @@ impl Chroot {
         T: AsRef<Path>,
     {
         let mut env: ChdirLoopEnv = ChdirLoopEnv::new();
-        let fdrc = dir_fd.as_fdrc().clone();
 
-        self.chdir_internal(fdrc, path.as_ref(), &mut env)
-            .map(|fd| Ok(Fd::from_fdrc(fd)?))
-            .unwrap()
+        self.chdir_internal(dir_fd.clone(), path.as_ref(), &mut env)
     }
 
-    fn open_component(&self, dir_fd: FdRc,
+    fn open_component(&self, dir_fd: Fd,
                       path: std::path::Component,
-                      env: &mut ChdirLoopEnv) -> Result<Rc<Fd>>
+                      env: &mut ChdirLoopEnv) -> Result<Fd>
     {
         let open_flags = 0
             | libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_RDONLY
@@ -178,15 +172,11 @@ impl Chroot {
                     Ok(dir_fd)
                 } else {
                     dir_fd.openat(&"..", open_flags)
-                        .map(|fd| Ok(fd.into_fdrc()))
-                        .unwrap()
                 }
             },
 
             std::path::Component::RootDir => {
                 self.root_fd()
-                    .map(|fd| Ok(fd.into_fdrc()))
-                    .unwrap()
             },
 
             std::path::Component::CurDir => {
@@ -195,14 +185,12 @@ impl Chroot {
 
             std::path::Component::Normal(p) => {
                 dir_fd.openat(&p, open_flags)
-                    .map(|fd| Ok(fd.into_fdrc()))
-                    .unwrap()
             },
         }
     }
 
-    fn chdir_internal(&self, dir_fd: Rc<Fd>, path: &Path,
-                      env: &mut ChdirLoopEnv) -> Result<Rc<Fd>>
+    fn chdir_internal(&self, dir_fd: Fd, path: &Path,
+                      env: &mut ChdirLoopEnv) -> Result<Fd>
     {
         let mut dir_fd = dir_fd;
 
@@ -242,10 +230,10 @@ impl Chroot {
     }
 
     fn opendir_internal(&self, dir_fd: &Fd, path: &Path, env: &mut ChdirLoopEnv)
-                 -> Result<(FdRc, OsString)>
+                 -> Result<(Fd, OsString)>
     {
         let current_dir = OsString::from(".");
-        let fdrc = dir_fd.as_fdrc().clone();
+        let fdrc = dir_fd.clone();
 
         match path.parent() {
             None =>
@@ -405,7 +393,7 @@ impl Chroot {
     {
         let parent_dir = Path::new("..");
         let mut res = Vec::new();
-        let mut dir_fd = unsafe { dir_fd.as_unmanaged() };
+        let mut dir_fd = dir_fd.clone();
         let mut env: ChdirLoopEnv = ChdirLoopEnv::new();
         let mut total_size = 0;
 
