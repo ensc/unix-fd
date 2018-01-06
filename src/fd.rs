@@ -134,6 +134,10 @@ impl FdRaw {
         Self::_new_unmanaged(self.fd)
     }
 
+    pub fn into_fd(self) -> Fd {
+        Fd::from_rawfd(self)
+    }
+
     pub fn dupfd(&self, cloexec: bool) -> Result<Self> {
         let cmd: int = match cloexec {
             true	=> libc::F_DUPFD_CLOEXEC,
