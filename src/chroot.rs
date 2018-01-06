@@ -95,6 +95,12 @@ impl Chroot {
     /// returns the filedescriptor.
     ///
     /// The directory will be opened with `O_CLOEXEC` flag being set.
+    pub fn root_fdraw(&self) -> Result<FdRaw> {
+        let open_flags = libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_RDONLY;
+
+        FdRaw::open(&self.root, open_flags)
+    }
+
     pub fn root_fd(&self) -> Result<Fd> {
         let open_flags = libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_RDONLY;
 
