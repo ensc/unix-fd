@@ -255,7 +255,7 @@ type Rc<T> = std::sync::Arc<T>;
 pub struct Fd(Rc<FdRaw>);
 
 impl Fd {
-    fn from_rawfd(fd: FdRaw) -> Self {
+    pub fn from_rawfd(fd: FdRaw) -> Self {
         Fd(Rc::new(fd))
     }
 
