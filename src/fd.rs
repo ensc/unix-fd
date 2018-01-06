@@ -255,7 +255,7 @@ type Rc<T> = std::sync::Arc<T>;
 pub struct Fd(Rc<FdRaw>);
 
 impl Fd {
-    fn to_self(fd: FdRaw) -> Self {
+    fn from_rawfd(fd: FdRaw) -> Self {
         Fd(Rc::new(fd))
     }
 
@@ -264,20 +264,20 @@ impl Fd {
     }
 
     pub fn open<T: AsRef<Path>>(path: &T, flags: int) -> Result<Self> {
-        FdRaw::open(path, flags).map(Self::to_self)
+        FdRaw::open(path, flags).map(Self::from_rawfd)
     }
 
     pub fn openat<T: AsRef<Path>>(&self, path: &T, flags: int) -> Result<Self> {
-        self.0.openat(path, flags).map(Self::to_self)
+        self.0.openat(path, flags).map(Self::from_rawfd)
     }
 
     pub fn createat<T: AsRef<Path>>(&self, path: &T, flags:
                                     int, mode: u32) -> Result<Self> {
-        self.0.createat(path, flags, mode).map(Self::to_self)
+        self.0.createat(path, flags, mode).map(Self::from_rawfd)
     }
 
     pub fn cwd() -> Self {
-        Self::to_self(FdRaw::cwd())
+        Self::from_rawfd(FdRaw::cwd())
     }
 
     pub fn into_rawfd(self) -> std::result::Result<FdRaw, Fd> {
