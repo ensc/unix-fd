@@ -15,11 +15,11 @@ repository = "https://github.com/ensc/unix-fd.git"
 errno = "0.2"
 libc = "0.2"
 log = "0.4"
-error-chain = "0.11"
+error-chain = "0.12"
 
 [dev-dependencies]
 tempdir = "0.3"
-env_logger = "0.4"
+env_logger = "0.8"
 
 [features]
 atomic-rc = []
