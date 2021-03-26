@@ -35,6 +35,7 @@ impl Drop for Dir {
 impl Dir {
     pub fn fdopendir(fd: &Fd) -> Result<Dir>
     {
+	#[allow(unused_parens)]
         const FLAGS: libc::c_int = (libc::O_DIRECTORY | libc::O_CLOEXEC |
                                     libc::O_RDONLY | libc::O_NOFOLLOW);
 

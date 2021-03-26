@@ -162,6 +162,7 @@ impl Chroot {
                       path: std::path::Component,
                       env: &mut ChdirLoopEnv) -> Result<Fd>
     {
+	#[allow(clippy::identity_op)]
         let open_flags = 0
             | libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_RDONLY
             | libc::O_NOFOLLOW;
