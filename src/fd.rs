@@ -176,7 +176,7 @@ impl FdRaw {
     where
         T: AsRef<Path>
     {
-        let mut stat: libc::stat = unsafe { mem::uninitialized() };
+        let mut stat: libc::stat = unsafe { mem::MaybeUninit::uninit().assume_init() };
 
         try_errno!(unsafe {
             if do_follow {
@@ -199,7 +199,7 @@ impl FdRaw {
             libc::AT_SYMLINK_NOFOLLOW
         };
 
-        let mut stat: libc::stat = unsafe { mem::uninitialized() };
+        let mut stat: libc::stat = unsafe { mem::MaybeUninit::uninit().assume_init() };
 
         try_errno!(unsafe {
             libc::fstatat(self.fd, fname.as_ref().as_libc().0, &mut stat, flags)
@@ -209,7 +209,7 @@ impl FdRaw {
     }
 
     pub fn fstat(&self) -> Result<libc::stat> {
-        let mut stat: libc::stat = unsafe { mem::uninitialized() };
+        let mut stat: libc::stat = unsafe { mem::MaybeUninit::uninit().assume_init() };
 
         try_errno!(unsafe {
             libc::fstat(self.fd, &mut stat)
