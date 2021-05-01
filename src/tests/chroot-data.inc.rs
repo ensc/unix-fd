@@ -1,5 +1,5 @@
-use ::test::FsItem;
-use ::test::FsItem::*;
+use crate::test::FsItem;
+use crate::test::FsItem::*;
 
 pub static TEST_FS_OUTSIDE: FsItem =
     Dir(b".", &[

@@ -7,13 +7,13 @@ use std::os::unix::ffi::OsStringExt;
 
 use libc;
 
-use test::FsItem;
-use chroot::Chroot;
+use crate::test::FsItem;
+use crate::chroot::Chroot;
 
 struct ChrootedChroot {
     dir: std::path::PathBuf,
     chroot: Chroot,
-    root_fd: ::fd::Fd,
+    root_fd: crate::fd::Fd,
 }
 
 impl AsRef<Chroot> for ChrootedChroot {
@@ -22,7 +22,7 @@ impl AsRef<Chroot> for ChrootedChroot {
     }
 }
 
-fn check_fsitem(root: &ChrootedChroot, dir_fd: &::fd::Fd, item: &FsItem) {
+fn check_fsitem(root: &ChrootedChroot, dir_fd: &crate::fd::Fd, item: &FsItem) {
 
     let chroot = root.as_ref();
 
@@ -99,7 +99,7 @@ fn check_fsitem(root: &ChrootedChroot, dir_fd: &::fd::Fd, item: &FsItem) {
         full_path
     ));
 
-    assert!(::fd::same_file_by_stat(&source_stat, &full_stat));
+    assert!(crate::fd::same_file_by_stat(&source_stat, &full_stat));
 
     let fds = match item {
         &FsItem::Dir(_, _) |
@@ -133,7 +133,7 @@ fn check_fsitem(root: &ChrootedChroot, dir_fd: &::fd::Fd, item: &FsItem) {
 
     let fd_ref = match fds {
         Some((fd_comp, fd_path)) => {
-            assert!(::fd::same_file_by_stat(
+            assert!(crate::fd::same_file_by_stat(
                 &fd_comp.fstat().unwrap(),
                 &fd_path.fstat().unwrap(),
             ));
@@ -187,13 +187,13 @@ fn check_fsitem(root: &ChrootedChroot, dir_fd: &::fd::Fd, item: &FsItem) {
             ));
 
             let st_b =
-                ::fd::FdRaw::stat(&root.dir.join(exp), false).expect(&format!(
+                crate::fd::FdRaw::stat(&root.dir.join(exp), false).expect(&format!(
                     "failed to stat reference dir {:?}",
                     exp
                 ));
 
-            assert!(::fd::same_file_by_stat(&st_a, &st_b));
-            assert!(::fd::same_file_by_stat(&st_a, &target_stat));
+            assert!(crate::fd::same_file_by_stat(&st_a, &st_b));
+            assert!(crate::fd::same_file_by_stat(&st_a, &target_stat));
         }
 
         &FsItem::DeadLink(_, _) => {
@@ -228,16 +228,16 @@ fn check_fsitem(root: &ChrootedChroot, dir_fd: &::fd::Fd, item: &FsItem) {
 
 #[test]
 fn test0() {
-    use chroot::Chroot;
+    use crate::chroot::Chroot;
     use env_logger;
 
     let _ = env_logger::init();
 
-    let tmpdir = ::test::create_tmpdir();
+    let tmpdir = crate::test::create_tmpdir();
     let chroot_path = &tmpdir.path().join("chroot");
 
-    ::test::create_fs(&tmpdir.path(), &TEST_FS_OUTSIDE);
-    ::test::create_fs(chroot_path, &TEST_FS_INSIDE);
+    crate::test::create_fs(&tmpdir.path(), &TEST_FS_OUTSIDE);
+    crate::test::create_fs(chroot_path, &TEST_FS_INSIDE);
 
     let chroot = Chroot::new(chroot_path);
     let root_fd = chroot.root_fd().expect("failed to get chroot fd");

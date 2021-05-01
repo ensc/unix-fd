@@ -10,9 +10,9 @@ use std::os::unix::ffi::OsStringExt;
 
 use std::mem;
 
-use errors::*;
+use crate::errors::*;
 
-use LibcString;
+use crate::LibcString;
 
 macro_rules! try_errno {
     ($expr:expr) => {{

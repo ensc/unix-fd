@@ -6,8 +6,8 @@ use std::fmt;
 use std::ffi::{CStr, OsString, OsStr};
 use std::os::unix::ffi::OsStrExt;
 
-use fd::Fd;
-use errors::*;
+use crate::fd::Fd;
+use crate::errors::*;
 
 extern {
     // this is missing in libc crate :(

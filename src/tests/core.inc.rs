@@ -15,7 +15,7 @@ pub enum FsItem<'a> {
     Empty,
 }
 
-pub fn create_fsitem(dir_fd: &::fd::Fd, item: &FsItem) {
+pub fn create_fsitem(dir_fd: &crate::fd::Fd, item: &FsItem) {
     use std::io::Write;
 
     match item {
@@ -72,7 +72,7 @@ pub fn create_fsitem(dir_fd: &::fd::Fd, item: &FsItem) {
 
 pub fn create_fs(tmpdir: &std::path::Path, item: &FsItem) {
     let fd =
-        ::fd::Fd::open(&tmpdir, 0
+        crate::fd::Fd::open(&tmpdir, 0
                        | libc::O_RDONLY | libc::O_DIRECTORY
                        | libc::O_CLOEXEC)
         .expect(&format!("failed to open tmpdir {:?}", tmpdir));

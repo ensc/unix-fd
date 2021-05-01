@@ -2,16 +2,14 @@
 extern crate libc;
 extern crate error_chain;
 
-use std;
-
 use std::fmt;
 use std::path::{Path, PathBuf};
 use std::ffi::OsString;
 
-use fd::*;
-use dir::*;
+use crate::fd::*;
+use crate::dir::*;
 
-use errors::*;
+use crate::errors::*;
 
 const MAX_LOOP_CNT: u32 = 256;
 
