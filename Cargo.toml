@@ -1,7 +1,8 @@
 [package]
 name = "unix-fd"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Enrico Scholz <enrico.scholz@sigma-chemnitz.de>"]
+edition = "2018"
 
 license = "LGPL-3.0"
 description = "Unix filedescriptor related utilities"
