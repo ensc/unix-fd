@@ -176,6 +176,7 @@ impl FdRaw {
     where
         T: AsRef<Path>
     {
+	#[allow(clippy::uninit_assumed_init)]
         let mut stat: libc::stat = unsafe { mem::MaybeUninit::uninit().assume_init() };
 
         try_errno!(unsafe {
@@ -199,6 +200,7 @@ impl FdRaw {
             libc::AT_SYMLINK_NOFOLLOW
         };
 
+	#[allow(clippy::uninit_assumed_init)]
         let mut stat: libc::stat = unsafe { mem::MaybeUninit::uninit().assume_init() };
 
         try_errno!(unsafe {
@@ -209,6 +211,7 @@ impl FdRaw {
     }
 
     pub fn fstat(&self) -> Result<libc::stat> {
+	#[allow(clippy::uninit_assumed_init)]
         let mut stat: libc::stat = unsafe { mem::MaybeUninit::uninit().assume_init() };
 
         try_errno!(unsafe {
