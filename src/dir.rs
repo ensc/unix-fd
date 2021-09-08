@@ -74,26 +74,38 @@ impl Dir {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct DirEntry {
-    pub stat: libc::dirent,
+    pub d_name:		OsString,
+    pub d_ino:		libc::c_ulong,
+    pub d_off:		libc::loff_t,
+    pub d_type:		u8,
 }
 
 impl DirEntry {
+    pub fn from_dirent(dirent: libc::dirent) -> Self {
+        let name_c = unsafe { CStr::from_ptr(dirent.d_name.as_ptr()) };
+        let name  = OsStr::from_bytes(name_c.to_bytes());
+
+	Self {
+	    d_name:	name.into(),
+	    d_ino:	dirent.d_ino,
+	    d_off:	dirent.d_off,
+	    d_type:	dirent.d_type,
+	}
+    }
+
     pub fn name(&self) -> &OsStr {
-        unsafe {
-            let tmp = CStr::from_ptr(self.stat.d_name.as_ptr());
-            OsStr::from_bytes(tmp.to_bytes())
-        }
+	&self.d_name
     }
 }
 
 impl fmt::Debug for DirEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f,
-               "dirent {{ ino={:?}, off={:?}, type={:?}, reclen={:?}, name='{:?}' }}",
-               self.stat.d_ino, self.stat.d_off, self.stat.d_type,
-               self.stat.d_reclen, self.name())
+               "dirent {{ ino={:?}, off={:?}, type={:?}, name='{:?}' }}",
+               self.d_ino, self.d_off, self.d_type,
+               self.d_name)
     }
 }
 
@@ -115,36 +127,32 @@ impl Iterator for ReadDir {
     type Item = Result<DirEntry>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        unsafe {
-            loop {
-                let entryp = self.dir.libc_readdir();
-                let entry_raw = match entryp {
-                    Err(e) => {
-                        if self.failed {
-                            return None;
-                        } else {
-                            self.failed = true;
-                            return Some(Err(e).chain_err(|| "readdir() failed"));
-                        }
+        loop {
+            let entryp = self.dir.libc_readdir();
+            let entry_raw = match entryp {
+                Err(e) => {
+                    if self.failed {
+                        break None;
+                    } else {
+                        self.failed = true;
+                        break Some(Err(e).chain_err(|| "readdir() failed"));
                     }
-                    Ok(e) => e,
-                };
-
-                if entry_raw.is_null() {
-                    return None;
                 }
+                Ok(e) => e,
+            };
 
-                self.failed = false;
+            if entry_raw.is_null() {
+                break None;
+            }
 
-                let entry = DirEntry {
-                    stat : *entry_raw
-                };
+            self.failed = false;
 
-                match entry.name().as_bytes() {
-                    // ignore '.' and '..' directory entries
-                    b"." | b".." => {}
-                    _ => return Some(Ok(entry)),
-                }
+            let entry = DirEntry::from_dirent(unsafe { *entry_raw });
+
+            match entry.name().as_bytes() {
+                // ignore '.' and '..' directory entries
+                b"." | b".." => {}
+                _ => break Some(Ok(entry)),
             }
         }
     }
