@@ -365,11 +365,11 @@ impl Chroot {
         const DT_UNKNOWN: u8 = 0;
         const DT_DIR: u8 = libc::DT_DIR;
 
-        if entry.stat.d_ino != info.stat.st_ino {
+        if entry.d_ino != info.stat.st_ino {
             return Ok(None);
         }
 
-        if entry.stat.d_type != DT_DIR && entry.stat.d_type != DT_UNKNOWN {
+        if entry.d_type != DT_DIR && entry.d_type != DT_UNKNOWN {
             return Ok(None);
         }
 
