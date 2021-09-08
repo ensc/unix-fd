@@ -1,6 +1,6 @@
 [package]
 name = "unix-fd"
-version = "0.0.2"
+version = "0.1.0"
 authors = ["Enrico Scholz <enrico.scholz@sigma-chemnitz.de>"]
 edition = "2018"
 
